@@ -34,11 +34,13 @@ public class ChargingRateActivity extends Activity {
     setContentView(R.layout.main);
 
     statusTextView = (TextView)findViewById(R.id.status_textview);
-    statusTextView.setText("Loading ..");
+    statusTextView.setText("Installing Scheduler ..");
 
     context = this;
 
     installScheduler();
+
+    statusTextView.setText("Waiting for Scheduler ..");
   }
 
 
@@ -82,6 +84,7 @@ public class ChargingRateActivity extends Activity {
             + "Level / Scale = " + batteryState.getLevel()
             + " / " + batteryState.getScale()
             + " (" + (batteryState.getCharge() * 100) + "%)" + "\n"
+            + "file = " + batteryState.getCurrentFiles().get(0)
         );
   }
 }

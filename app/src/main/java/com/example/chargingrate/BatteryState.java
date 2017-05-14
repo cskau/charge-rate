@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 
 
 public class BatteryState {
@@ -22,10 +23,21 @@ public class BatteryState {
 
 
   private static final String [] currentFilePaths = {
-    // Nexus 5?
+    // Nexus 5, seems to range at least [-92000, 250000] ??
+    // Samsung SM-T700
+    // Nexus 5X, but has restricted user permissions..
+    "/sys/class/power_supply/battery/current_now",
+    // Samsung SM-T700
+    "/sys/class/power_supply/battery/current_avg",
+    "/sys/class/power_supply/battery/chg_current_adc",
+    // Nexus 10
+    "/sys/class/power_supply/smb347-battery/current_now",
+    // ?
     "/sys/class/power_supply/battery/batt_current",
     // FreeTel FT142A
     "/sys/class/power_supply/battery/BatteryAverageCurrent",
+    // Nexus 5X also has
+    "/sys/class/power_supply/battery/input_current_settled",
   };
 
 
@@ -108,25 +120,39 @@ public class BatteryState {
     // Range: [0.0, 1.0]
     return getLevel() / (float)getScale();
   }
+  
 
+  public ArrayList<String> getCurrentFiles() {
+    ArrayList<String> files = new ArrayList<String>();
 
-  public String getCurrent() {
     for (String currentFilePath : currentFilePaths) {
       File f = new File(currentFilePath);
       if (f.exists() && f.isFile() && f.canRead()) {
-        try {
-          // TODO: some handling of different formats is needed.
-          BufferedReader buf = new BufferedReader(new FileReader(f));
-          return buf.readLine();
-        } catch(FileNotFoundException e) {
-          // TODO!!
-          Log.e(TAG, e.getMessage(), e);
-        } catch(IOException e) {
-          // TODO!!
-          Log.e(TAG, e.getMessage(), e);
-        }
+        files.add(currentFilePath);
       }
     }
+
+    return files;
+  }
+
+
+  public String getCurrent() {
+    for (String currentFilePath : getCurrentFiles()) {
+      File f = new File(currentFilePath);
+      try {
+        // TODO: some handling of different formats is needed.
+        BufferedReader buf = new BufferedReader(new FileReader(f));
+        return buf.readLine();
+      } catch(FileNotFoundException e) {
+        // TODO!!
+        Log.e(TAG, e.getMessage(), e);
+      } catch(IOException e) {
+        // TODO!!
+        Log.e(TAG, e.getMessage(), e);
+      }
+    }
+
+    Log.w(TAG, "No matching current file found!");
 
     return "";
   }
